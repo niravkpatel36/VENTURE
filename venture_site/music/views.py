@@ -1,27 +1,62 @@
-import os
+# music/views.py
+import os, random
 import base64
 import requests
 from dotenv import load_dotenv
+
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render
-from django.conf import settings
+from django.templatetags.static import static
 from django.views.decorators.cache import cache_page
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+import logging
 
 load_dotenv()
 
+# Spotify endpoints used by your search/explore features
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search"
 SPOTIFY_ALBUM_URL = "https://api.spotify.com/v1/albums/"
 SPOTIFY_ARTIST_URL = "https://api.spotify.com/v1/artists/"
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SAMPLES_DIR = os.path.join(BASE_DIR, "static", "music", "samples")
+
+# ---------- Basic pages ----------
 def home_page(request):
     return render(request, "music/home.html")
 
+@cache_page(5)
+def home(request):
+    """
+    Search page for Spotify-backed search.
+    Query param: q
+    """
+    query = request.GET.get("q", "").strip()
+    results = None
+    error = None
+
+    if query:
+        try:
+            token = get_spotify_token()
+            results = search_spotify(query, token, limit=12)
+        except Exception as e:
+            error = str(e)
+
+    return render(request, "music/index.html", {
+        "query": query,
+        "results": results,
+        "error": error,
+    })
+
+# ---------- Spotify helpers ----------
 def get_spotify_token():
-    """Obtain a Spotify access token using Client Credentials flow."""
+    """Obtain a Spotify access token (Client Credentials)."""
     client_id = os.environ.get("SPOTIFY_CLIENT_ID")
     client_secret = os.environ.get("SPOTIFY_CLIENT_SECRET")
     if not client_id or not client_secret:
-        raise RuntimeError("Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET as environment variables.")
+        raise RuntimeError("Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in environment.")
 
     auth_header = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
     headers = {"Authorization": f"Basic {auth_header}"}
@@ -54,27 +89,8 @@ def search_spotify(query, token, limit=10):
         tracks.append(track)
     return tracks
 
-@cache_page(5)
-def home(request):
-    query = request.GET.get("q", "").strip()
-    results = None
-    error = None
-
-    if query:
-        try:
-            token = get_spotify_token()
-            results = search_spotify(query, token, limit=12)
-        except Exception as e:
-            error = str(e)
-
-    return render(request, "music/index.html", {
-        "query": query,
-        "results": results,
-        "error": error,
-    })
-
+# ---------- Album / Artist ----------
 def album_detail(request, album_id):
-    """Display details and track list for a specific album."""
     query = request.GET.get("q", "")
     try:
         token = get_spotify_token()
@@ -91,7 +107,6 @@ def album_detail(request, album_id):
     })
 
 def artist_detail(request, artist_id):
-    """Display artist info and their top tracks."""
     query = request.GET.get("q", "")
     try:
         token = get_spotify_token()
@@ -115,8 +130,9 @@ def artist_detail(request, artist_id):
         "query": query,
     })
 
+# ---------- Explore (genres/categories) ----------
 def explore(request):
-    """Show Spotify categories (genres)."""
+    """Show Spotify categories (genres). Fallback to static list if the call fails."""
     try:
         token = get_spotify_token()
         headers = {"Authorization": f"Bearer {token}"}
@@ -124,19 +140,26 @@ def explore(request):
         resp.raise_for_status()
         categories = resp.json().get("categories", {}).get("items", [])
     except Exception as e:
-        categories = []
-        error = str(e)
+        # fallback static categories if Spotify fails
+        categories = [
+            {"id": "pop", "name": "Pop", "icons": [{"url": static("music/img/genres/pop.jpg")}]},
+            {"id": "indie", "name": "Indie", "icons": [{"url": static("music/img/genres/indie.jpg")}]},
+            {"id": "lofi", "name": "Lo-Fi", "icons": [{"url": static("music/img/genres/lofi.jpg")}]},
+            {"id": "jazz", "name": "Jazz", "icons": [{"url": static("music/img/genres/jazz.jpg")}]},
+        ]
     return render(request, "music/explore.html", {"categories": categories})
 
 def explore_genre(request, genre_id):
-    """Fetch and display playlists for a specific genre."""
-    token = get_spotify_token()
-    headers = {"Authorization": f"Bearer {token}"}
-
-    url = f"https://api.spotify.com/v1/browse/categories/{genre_id}/playlists"
-    resp = requests.get(url, headers=headers)
-    data = resp.json()
-
+    """Fetch and display playlists for a specific genre/category (Spotify)."""
+    try:
+        token = get_spotify_token()
+        headers = {"Authorization": f"Bearer {token}"}
+        url = f"https://api.spotify.com/v1/browse/categories/{genre_id}/playlists"
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception:
+        data = {"playlists": {"items": []}}
     playlists = []
     for item in data.get("playlists", {}).get("items", []):
         playlists.append({
@@ -144,27 +167,203 @@ def explore_genre(request, genre_id):
             "image": (item.get("images") or [{}])[0].get("url"),
             "spotify_url": item.get("external_urls", {}).get("spotify"),
         })
-
     return render(request, "music/explore_genre.html", {
         "playlists": playlists,
         "genre_id": genre_id,
     })
 
-
 def genre_detail(request, genre_id):
-    """Show popular playlists for a given Spotify genre category."""
-    try:
-        token = get_spotify_token()
-        headers = {"Authorization": f"Bearer {token}"}
-        url = f"https://api.spotify.com/v1/browse/categories/{genre_id}/playlists?country=US&limit=10"
-        resp = requests.get(url, headers=headers, timeout=10)
-        resp.raise_for_status()
-        playlists = resp.json().get("playlists", {}).get("items", [])
-    except Exception as e:
-        playlists = []
-        error = str(e)
-    return render(request, "music/genre_detail.html", {
-        "playlists": playlists,
-        "genre_id": genre_id,
-    })
+    """Alias for explore_genre (keeps compatibility with templates)."""
+    return explore_genre(request, genre_id)
 
+# ---------- Generate page placeholder ----------
+def generate(request):
+    return render(request, "music/generate.html")
+
+# ---------- AI Studio (local sample mixing) ----------
+@csrf_exempt
+def ai_view(request):
+    """
+    Render the Explore Music page (space-themed).
+    """
+    # we render the explore.html template (which has the space background and player)
+    return render(request, "music/explore.html", {})
+
+logger = logging.getLogger(__name__)
+
+# === Mood → Background Image Map ===
+MOOD_BG = {
+    "autumn": "music/bg/Autumn.jpg",
+    "spring": "music/bg/Spring.jpg",
+    "summer": "music/bg/Summer.jpg",
+    "winter": "music/bg/Winter.jpg",
+    "crazy": "music/bg/Crazy.jpg",
+    "day": "music/bg/Day.jpg",
+    "melancholy": "music/bg/Melancholy.jpg",
+    "night": "music/bg/Night.jpg",
+    "peace": "music/bg/Peace.jpg",
+}
+
+@csrf_exempt
+def ai_generate_api(request):
+    """
+    POST endpoint: accepts 'prompt' (mood/vibe)
+    Returns JSON: { success: True, file: "<static url>", chosen_sample: "<filename>", mood: "<prompt>" }
+    """
+    try:
+        if request.method != "POST":
+            return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+        prompt_raw = (request.POST.get("prompt") or "").strip()
+        prompt = prompt_raw.lower()
+
+        if not prompt:
+            return JsonResponse({"error": "Missing prompt"}, status=400)
+
+        base_dir = os.path.join(os.path.dirname(__file__), "static", "music", "samples")
+        if not os.path.isdir(base_dir):
+            logger.error("Samples directory missing: %s", base_dir)
+            return JsonResponse({"error": "Server misconfiguration: samples directory missing."}, status=500)
+
+        # mood -> sample mapping (make sure these filenames exist in static/music/samples/)
+        mood_map = {
+            "autumn": ["Autumn.mp3"],
+            "spring": ["Spring.mp3"],
+            "summer": ["Summer.mp3"],
+            "winter": ["Winter.mp3"],
+            "crazy": ["Crazy.mp3"],
+            "day": ["Day.mp3"],
+            "melancholy": ["Melancholy.mp3"],
+            "night": ["Night.mp3"],
+            "peace": ["Peace.mp3"],
+        }
+
+        # semantic synonyms (free-text mapping)
+        semantic_map = {
+            "summer": ["beach", "california", "sun", "heat", "tropical", "warm"],
+            "winter": ["snow", "cold", "frost", "december", "christmas", "icy"],
+            "night": ["late", "night", "midnight", "stars", "nocturnal"],
+            "autumn": ["fall", "leaves", "pumpkin", "november", "autumn"],
+            "peace": ["calm", "relax", "zen", "quiet", "peace"],
+            "melancholy": ["sad", "nostalgia", "rain", "blue", "melancholy"],
+            "crazy": ["party", "wild", "energetic", "rave", "locked in", "adrenaline"],
+            "day": ["dope", "skateboard", "fun", "confident", "type shi", "good", "life"],
+            "spring": ["flowers", "valley", "nice", "jazz"]
+        }
+
+        # 1) direct mood_map match
+        matched_files = []
+        chosen_mood = None
+        for key, files in mood_map.items():
+            if key in prompt:
+                matched_files = [f for f in files if os.path.exists(os.path.join(base_dir, f))]
+                chosen_mood = key
+                break
+
+        # 2) synonyms match
+        if not matched_files:
+            for key, syns in semantic_map.items():
+                for s in syns:
+                    if s in prompt:
+                        matched_files = [f for f in mood_map.get(key, []) if os.path.exists(os.path.join(base_dir, f))]
+                        chosen_mood = key
+                        break
+                if matched_files:
+                    break
+
+        # 3) fallback: random sample from samples dir
+        if not matched_files:
+            all_samples = [f for f in os.listdir(base_dir) if f.lower().endswith(('.mp3', '.wav'))]
+            if not all_samples:
+                logger.error("No sample audio files present in %s", base_dir)
+                return JsonResponse({"error": "No sample audio files on server."}, status=500)
+            chosen = random.choice(all_samples)
+            chosen_mood = "random"
+        else:
+            chosen = random.choice(matched_files)
+
+        file_url = static(f"music/samples/{chosen}")
+
+        # choose background (fallback = Night)
+        bg_url = static(MOOD_BG.get(chosen_mood, "music/bg/Night.jpg"))
+
+        return JsonResponse({
+        "success": True,
+        "file": file_url,
+        "mood": prompt_raw,
+        "chosen_sample": chosen,
+        "background": bg_url
+        })
+
+
+    except Exception as e:
+        logger.exception("ai_generate_api failed")
+        return JsonResponse({"error": "Internal server error", "details": str(e)}, status=500)
+
+
+def author_album(request):
+    """
+    Serve the author's album page. Expects files in:
+      music/static/music/album/
+    and album art at music/static/music/album/Album Cover - Postscript.png
+    """
+    try:
+        album_dir = os.path.join(os.path.dirname(__file__), "static", "music", "album")
+        if not os.path.isdir(album_dir):
+            return render(request, "music/album.html", {"album_tracks": [], "album_art": None, "message": "Album not found.", "album_title": "From the Artist"})
+
+        filename_to_title = {
+            "Sainted.wav": "Sainted",
+            "Nocturnal_Vision.wav": "Nocturnal Vision",
+            "Righteous_Liars.wav": "Righteous Liars",
+            "Hold_On_2.wav": "Hold On",
+            "Arson (1).wav": "Arson",
+            "Pyromania.wav": "Pyromania",
+            "FE_Draft_Final (5).wav": "Fake Entitlement",
+            "Allegiance.wav": "Allegiance",
+            "Kingda Ka.wav": "Kingda Ka",
+            "Graffiti.wav": "Graffiti",
+            "Tribulations_1 (2).wav": "Tribulations",
+            "Epiphany_Pt_1.wav": "Epiphany",
+            "Scripted.wav": "Scripted",
+            "Leaf.wav": "Leaf",
+        }
+
+        ordered_filenames = [
+            "Sainted.wav",
+            "Nocturnal_Vision.wav",
+            "Righteous_Liars.wav",
+            "Hold_On_2.wav",
+            "Arson (1).wav",
+            "Pyromania.wav",
+            "FE_Draft_Final (5).wav",
+            "Allegiance.wav",
+            "Kingda Ka.wav",
+            "Graffiti.wav",
+            "Tribulations_1 (2).wav",
+            "Epiphany_Pt_1.wav",
+            "Scripted.wav",
+            "Leaf.wav",
+        ]
+
+        album_tracks = []
+        for fname in ordered_filenames:
+            disk_path = os.path.join(album_dir, fname)
+            if os.path.exists(disk_path):
+                display = filename_to_title.get(fname, fname)
+                album_tracks.append({"title": display, "file": static(f"music/album/{fname}")})
+
+        art_path = os.path.join(album_dir, "Album Cover - Postscript.png")
+        album_art = static("music/album/Album Cover - Postscript.png") if os.path.exists(art_path) else None
+
+        return render(request, "music/album.html", {
+            "album_tracks": album_tracks,
+            "album_art": album_art,
+            "message": None,
+            "album_title": "POSTSCRIPT"
+        })
+    except Exception as e:
+        logger.exception("author_album failed")
+        return render(request, "music/album.html", {"album_tracks": [], "album_art": None, "message": "Server error loading album.", "album_title": "POSTSCRIPT"})
+    
+    

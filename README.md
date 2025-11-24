@@ -1,66 +1,72 @@
-# 🎵 Sargam: Life’s cooler with a soundtrack.
+# 🎵 VENTURE: Life’s cooler with a soundtrack.
 
-## Overview
+## Project overview
+VENTURE is a lightweight music exploration and listening web application built with Django, designed as a portfolio-grade engineering project. It highlights several key capabilities:
 
-**Sargam** is a dynamic, Django-based web application that allows users to search for songs, discover music by genre, and explore albums and artists using the Spotify API. Designed with a clean, interactive interface and mobile responsiveness in mind, the app blends Python, JavaScript, and modern CSS to create an engaging experience that’s both functional and visually appealing.
+- A search feature that integrates with the Spotify API for searching tracks, artists, and albums (used for the Search Music view).
+- An Explore Music feature (the “Mood/Theme Studio”) that maps free-text prompts and mood/theme keywords to locally-hosted sample audio and dynamically updates the visual background for an immersive experience.
+- A polished My Album feature that presents a full 14-track album with immersive album art, a compact player UI and accessible, keyboard-friendly controls.
 
-Users can:
+The project purposefully balances visual polish and pragmatic engineering. Some parts are inspired by modern music apps such Apple Music and Spotify while remaining focused on what’s possible in a short, reliable MVP.
 
-- Search for songs by title and view related albums and artists.
+---
 
-- Explore playlists across various genres like pop, classical, jazz, or hip-hop.
+## Distinctiveness and Complexity
 
-- Interact with floating space-themed animations and hover effects for a polished, immersive experience.
+This project goes beyond a simple “music player” demo by combining multiple concerns that make it a stronger engineering artifact:
 
-- Navigate seamlessly across the homepage, search, and exploration pages.
+1. **Multimodal and reactive UX:** Instead of presenting a static list of audio files, VENTURE shifts the entire page’s visual mood to match the user’s input (mood keywords → background images) while playing context-appropriate samples. This blends audio, imagery, and UX design, turning a simple feature into an interactive visual-mood experience.
 
-## Key features
+2. **Robust client-server mapping:** The explore feature processes a free-text prompt server-side using keyword and synonym matching (with a clean fallback to randomness). It returns stable static URLs for both the audio sample and the background image. 
 
-- **Search:** search songs, artists, albums, etc. and display results with relevant information, 30 seconds preview (when available), and links to Spotify.
+This design avoids unnecessary ML dependencies, behaves consistently offline, and illustrates thoughtful engineering tradeoffs.
 
-- **Album pages:** list tracks in the album, show album art, release date and link to Spotify.
+3. **Production-aware static assets handling:** All audio is served through Django static files, and the app includes graceful handling of missing directories or files. Instead of crashing, the UI fails softly and logs clear errors — a detail that matters in demo environments and makes the project production-aware.
 
-- **Artist pages:** show artist details and top tracks (with preview playback).
+4. **Polished UI and motion:** The project uses layered backgrounds, star animations, blur effects, and modals not just for aesthetics but for usability: maintaining contrast and readability across mood-based backgrounds. Achieving this required iterative CSS work and a light JS layer (e.g., handling autoplay restrictions with “Tap to play”).
 
-- **Explore by genre:** fetches Spotify categories and displays playlists for a chosen genre.
+**Complexity:**
+- Integrates multiple subsystems (API interaction, deterministic AI-adjacent logic, visual/mood mapping, custom audio player).
+- Demonstrates considered UX and accessibility, not just functional correctness.
+- Features were built using resilient approaches, including but not limited to deterministic prompt mapping, static asset pipelines, and graceful fallbacks.
 
-- **Preserves search state:** “Back to Search” returns users to the previous query result.
+---
 
-- **Polished UI & UX:** responsive grid layout, hover animations, and canvas-based particle animations (subtle floating stars) for visual interest without sacrificing accessibility.
+## Repository Structure
 
-- **Security best practice:** Spotify credentials are stored in environment variables (.env) and never committed to source control.
+**Top-Level**
+- **manage.py:** Django’s command-line utility for running the server and administrative tasks.
+- **requirements.txt:** Python package dependencies.
+- **db.sqlite3:** Local development database.
 
-- **Mobile responsive:** layouts and typography adapt to smaller screens; grids collapse to single-column on phones.
+**Project Package: `venture_site/venture_site/`**
+- **settings.py:** Global Django settings (installed apps, middleware, static files, auth, etc.).
+- **urls.py:** Root URL configuration; includes app-level URL routing.
+- **wsgi.py / asgi.py:** Entry points for deployment (WSGI/ASGI servers).
+- **__init__.py:** Marks this as a Python package.
 
-## Tech stack
+**App: `music/`**
+- **views.py:** All core views:
+    - Spotify search handler
+    - Explore/Mood Studio handler
+    - Author Album player
+    - The deterministic mood-mapping logic
+- **urls.py:** Routes for /search/, /explore/, /album/, and API endpoints.
 
-- **Backend:** Django (views, URL routing, templates).
+**Templates**
+- **music/templates/music/:** Includes layout.html, index.html, explore.html, album.html, and more to define page structure, display dynamic content, and extend shared layouts.
 
-- **Frontend:** HTML, CSS (responsive grid, media queries), JavaScript for Canvas animations and UI enhancements.
+**Static Files**
+- **music/static/music/:** Includes album/, bg/, js/, samples/, and styles.css to support the UI with styling, media assets, and client-side functionality.
 
-- **API:** Spotify Web API (Client Credentials flow for server-side access).
+**Other**
+- **.env:** Environment variables (e.g., Spotify API credentials).
+- **.gitignore:** Git ignore rules.
+- **README.md:** Project documentation.
 
-- **HTTP client:** requests (Python) for server-to-Spotify communication.
+---
 
-- **Environment management:** python-dotenv (reads .env) + venv for local development.
-
-- **Database:** SQLite (provided by Django for development).
-
-- **Dev tooling:** VS Code, browser devtools (mobile emulation), Git for version control.
-
-## Architecture
-
-- Client (browser) requests a route.
-
-- Django view receives the request and, if required, obtains a Spotify access token using server-side Client Credentials (credentials read from environment variables).
-
-- Server → Spotify API: server makes authorized requests (search, album, artist, categories, playlists).
-
-- Server parses the JSON response into compact objects and renders templates.
-
-- Client displays results; JavaScript enhances visuals (Canvas background + small interactive pieces).
-
-## How to Run Sargam Locally
+## How to Run VENTURE Locally
 
 1. Clone the repository and enter the project folder.
 
@@ -88,14 +94,12 @@ SPOTIFY_CLIENT_SECRET=your_secret_here
 
 5. Visit http://127.0.0.1:8000/. 
 
-## Future improvements
+## Future Improvements
 
-- Add user accounts and favorites (persisted model + auth).
+There are several high-value enhancements that could improve the project. These include:
 
-- Use Spotify Web Playback SDK for authenticated playback.
+1. **User Accounts + Playlists:** Allow users to save favourite samples, create mini-playlists, or bookmark moods as a natural extension that makes the app feel more like a personal music companion.
 
-- Add caching (Redis) for tokens and popular queries to reduce API usage.
+2. **Smarter Mood/Theme Inference:** Introduce a lightweight, explainable ML classifier for mood inference while still falling back to deterministic matching for reliability. This preserves robustness while allowing more expressive prompts. 
 
-- Accessibility improvements (aria attributes, high-contrast modes, keyboard navigation).
-
-- End-to-end tests and automated deployment pipeline.
+3. **Waveform Visualization:** Add a live, canvas-based waveform or spectrum visualization on the album player to potentially increase the multimedia feel of the interface.

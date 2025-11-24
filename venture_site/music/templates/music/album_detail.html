@@ -49,9 +49,9 @@
   {% endfor %}
 
 {% if query %}
-  <a href="{% url 'home' %}?q={{ query }}" class="home-button">← Back to Search</a>
+  <a href="/" class="home-button">← Back to Home</a>
 {% else %}
-  <a href="{% url 'home' %}" class="home-button">← Back to Search</a>
+  <a href="/" class="home-button">← Back to Home</a>
 {% endif %}
 
 </body>

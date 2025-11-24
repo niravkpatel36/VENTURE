@@ -1,0 +1,96 @@
+/* Global dark star background */
+body {
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at center, #020617 0%, #000000 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+}
+
+/* Ensure Explore background images always fit screen */
+body.explore-bg-active {
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-attachment: fixed !important;
+    background-color: black; /* fallback */
+}
+
+/* === AI STUDIO VISUAL EFFECTS === */
+canvas#bgCanvas,
+canvas#audio-visualizer {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+/* Mood-based transitions */
+body.mood-happy {
+  background: linear-gradient(120deg, #ffb347, #ffcc33);
+  transition: background 1s ease;
+}
+
+body.mood-sad {
+  background: linear-gradient(120deg, #3a6073, #16222a);
+  transition: background 1s ease;
+}
+
+body.mood-lofi {
+  background: linear-gradient(120deg, #654ea3, #eaafc8);
+  transition: background 1s ease;
+}
+
+body.mood-jazz {
+  background: linear-gradient(120deg, #1f4037, #99f2c8);
+  transition: background 1s ease;
+}
+
+body.mood-space {
+  background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+  transition: background 1s ease;
+}
+
+/* ensure canvases don't block UI interactions */
+canvas#bgCanvas, canvas#visualizerCanvas, canvas#audio-visualizer {
+  pointer-events: none;
+}
+
+/* simple mood classes (layout.html body will pick these up) */
+body.mood-happy { background: linear-gradient(120deg,#fff2cc,#ffd6a5); }
+body.mood-sad   { background: linear-gradient(120deg,#0f1724,#071427); }
+body.mood-lofi  { background: linear-gradient(120deg,#4b2b7f,#fbc2eb); }
+body.mood-jazz  { background: linear-gradient(120deg,#0b3d91,#6bd3ff); }
+
+/* Explore page theme backgrounds */
+.mood-summer { background: linear-gradient(145deg, #ffeb99, #ffd54f); }
+.mood-winter { background: linear-gradient(145deg, #a8cfff, #d0e7ff); }
+.mood-autumn { background: linear-gradient(145deg, #ff9f43, #ff6f20); }
+.mood-night  { background: linear-gradient(145deg, #00111a, #000000); }
+.mood-day    { background: linear-gradient(145deg, #a8e6ff, #63c5ff); }
+.mood-crazy  { background: linear-gradient(145deg, #ff58d6, #7f00ff); }
+.mood-peace  { background: linear-gradient(145deg, #b2f7ef, #89cff0); }
+.mood-melancholy { background: linear-gradient(145deg, #3a6073, #16222a); }
+
+/* fallback */
+.mood-default { background: linear-gradient(145deg, #333333, #000000); }
+
+.back-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.35);
+}
+

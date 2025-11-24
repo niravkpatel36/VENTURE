@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sargam: Search Music</title>
+  <title>Venture</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
@@ -277,8 +277,8 @@
   <canvas id="background"></canvas>
 
   <header>
-    <h1>सरगम</h1>
-    <p>Find the soundtrack to your story.</p>
+    <h1>VENTURE</h1>
+    <p>Find the soundtrack to your story</p>
     <a href="/" class="home-link">← Back to Home</a>
   </header>
 
@@ -311,9 +311,10 @@
               </audio>
             {% endif %}
             <div class="links">
-              <a href="{% url 'artist_detail' t.artist_id %}?q={{ query }}">Artist</a> |
-              <a href="{% url 'album_detail' t.album_id %}?q={{ query }}">Album</a> |
+              <a href="{% url 'music:artist_detail' t.artist_id %}?q={{ query }}">Artist</a> |
+              <a href="{% url 'music:album_detail' t.album_id %}?q={{ query }}">Album</a> |
               <a href="{{ t.spotify_url }}" target="_blank">Spotify</a>
+
             </div>
           </div>
         {% endfor %}

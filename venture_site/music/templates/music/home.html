@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sargam: Explore Music</title>
+  <title>Venture</title>
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
@@ -30,12 +30,14 @@ body {
   z-index: 0;
 }
 
+/* Homepage sparkle (green aesthetic) */
 .sparkle {
   position: absolute;
-  background: #1db954;
+  background: rgba(29,185,84,0.95); /* vivid green */
   border-radius: 50%;
-  opacity: 0.7;
+  opacity: 0.9;
   animation: sparkle 3s infinite ease-in-out;
+  box-shadow: 0 0 8px rgba(29,185,84,0.6);
 }
 
 @keyframes sparkle {
@@ -149,11 +151,12 @@ a:hover {
 </head>
 <body>
   <div class="overlay"></div>
-  <h1>सरगम</h1>
+  <h1>VENTURE</h1>
   <p>Life's cooler with a soundtrack</p>
-  <div class="buttons">
+    <div class="buttons">
     <a href="/search/">🚀 Search Music</a>
-    <a href="/explore/">🌌 Explore by Genre</a>
+    <a href="{% url 'music:author_album' %}" class="btn">🎵 My Album</a>
+    <a href="{% url 'music:ai_view' %}" class="btn">🌌 Explore Music</a>
   </div>
   <script>
 for (let i = 0; i < 40; i++) {
