@@ -39,7 +39,6 @@ This design avoids unnecessary ML dependencies, behaves consistently offline, an
 4. **Polished UI and motion:** The project uses layered backgrounds, star animations, blur effects, and modals not just for aesthetics but for usability: maintaining contrast and readability across mood-based backgrounds. Achieving this required iterative CSS work and a light JS layer (e.g., handling autoplay restrictions with “Tap to play”).
 
 ### Why VENTURE Is Distinct
-**Why VENTURE Is Distinct:**
 
 1. **Different from Project 4 (Network)**
 
@@ -82,7 +81,7 @@ VENTURE differs because several core behaviors must run server-side:
 Combined with modal UI, custom audio controls, and dynamic scripted behavior, VENTURE operates across multiple layers of the stack in ways those projects do not attempt.
 
 ### Why VENTURE Is Complex
-**Why VENTURE Is Complex:**
+
 1. **Deterministic Mood/Theme Engine**
 
 The Explore feature uses a custom, deterministic mapping algorithm that:
