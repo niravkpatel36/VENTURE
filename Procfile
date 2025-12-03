@@ -1,1 +1,1 @@
-web: gunicorn venture_site.venture_site.wsgi
+web: gunicorn venture_site.venture_site.wsgi:application
