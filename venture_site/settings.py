@@ -40,7 +40,6 @@ INSTALLED_APPS = [
 
     'music',
     'ai_music',
-    'ai_generator',
     'django_rq',
 ]
 
