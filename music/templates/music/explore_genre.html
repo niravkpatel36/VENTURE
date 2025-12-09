@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explore Genre</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      min-height: 100vh;
+      box-sizing: border-box;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      z-index: 2;
+      position: relative;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      text-align: center;
+      padding: 10px;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .card:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translateY(-6px);
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .song-title {
+      margin-top: 10px;
+      font-size: 1rem;
+      word-wrap: break-word;
+    }
+
+    .home-button {
+      display: block;
+      width: fit-content;
+      margin: 2rem auto;
+      background: #1db954;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      z-index: 2;
+      position: relative;
+    }
+
+    .home-button:hover {
+      background: #1ed760;
+      transform: scale(1.05);
+    }
+
+    #background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+      h2 {
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+      }
+      .grid {
+        gap: 15px;
+      }
+      .card {
+        padding: 8px;
+      }
+      .song-title {
+        font-size: 0.95rem;
+      }
+      .home-button {
+        font-size: 0.95rem;
+        padding: 9px 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 1.4rem;
+      }
+      .song-title {
+        font-size: 0.9rem;
+      }
+      .home-button {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="background"></canvas>
+
+  <h2>Explore Playlists</h2>
+
+  <div class="grid">
+    {% for p in playlists %}
+      <div class="card">
+        <a href="{{ p.spotify_url }}" target="_blank">
+          <img src="{{ p.image }}" alt="{{ p.name }}">
+          <p class="song-title">{{ p.name }}</p>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <a href="{% url 'explore' %}" class="home-button">← Back to Explore</a>
+
+  <script>
+    const canvas = document.getElementById('background');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const stars = Array.from({ length: 80 }).map(() => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 0.4,
+      dx: (Math.random() - 0.5) * 0.3,
+      dy: (Math.random() - 0.5) * 0.3,
+    }));
+
+    function animate() {
+      ctx.fillStyle = 'rgba(15, 32, 39, 0.4)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(0, 200, 180, 0.7)';
+      stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+        s.x += s.dx;
+        s.y += s.dy;
+        if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+        if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>

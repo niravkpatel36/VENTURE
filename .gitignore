@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+db.sqlite3
+db.sqlite3-journal
+
+# Media
+media/
+
+# Django static build outputs
+staticfiles/
+static_root/
+
+# Migrations compiled caches
+*/migrations/__pycache__/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# Environment variables
+.env
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/

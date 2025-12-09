@@ -1,0 +1,300 @@
+{% extends "music/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<style>
+
+/* ----- MOBILE PLAYER RESPONSIVENESS ----- */
+
+@media (max-width: 600px) {
+
+    .player-container,
+    .audio-player,
+    .player-bar {
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .progress-container {
+        width: 100% !important;
+        margin: 0 auto;
+    }
+
+    .track-info {
+        text-align: center;
+        width: 100%;
+    }
+
+    .album-art {
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    audio {
+        width: 100% !important;
+    }
+}
+
+
+/* The fade-in magic */
+/* dynamic background (cover properly) */
+#dynamic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  min-height: 100vh;                 /* ensures full viewport coverage */
+  background-size: cover !important; /* make it cover */
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-color: #000;
+  filter: brightness(0.55) saturate(1.05);
+  transition: opacity 0.45s ease-in-out, background-image 0.35s ease-in-out;
+  opacity: 0;                         /* fade in when set */
+  will-change: background-image, opacity;
+}
+
+/* when active, fade in */
+body.explore-bg-active #dynamic-bg { opacity: 1; }
+
+/* on small screens, avoid fixed attachment which causes odd repeating/cutting */
+@media (max-width: 900px) {
+  #dynamic-bg { background-attachment: scroll !important; }
+}
+
+/* Keep stars visible & smooth */
+#star-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Purple upward floating stars */
+.purple-star {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(155, 46, 255, 0.95); /* Purple color */
+    border-radius: 50%;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 6px rgba(155,46,255,0.15));
+    animation: starRiseUp linear infinite;
+}
+
+@keyframes starRiseUp {
+    from { transform: translateY(0); opacity: 0.95; }
+    to   { transform: translateY(-120vh); opacity: 0; }
+}
+
+/* Reset & typography */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    color: #fff;
+    background: #000;
+}
+
+/* Container */
+.explore-wrap {
+    max-width: 900px;
+    margin: 78px auto;
+    padding: 32px;
+    display: block;
+}
+
+.card {
+    background: rgba(3, 6, 12, 0.6);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+    text-align: center;
+    position: relative;
+    min-height: 160px;
+}
+
+/* Back button */
+.back-btn {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: .16s;
+}
+.back-btn:hover {
+    background: rgba(255,255,255,0.14);
+}
+
+h1 { margin: 6px 0 4px; font-size: 2.2rem; }
+p.lead { color: #cbd5e1; margin-bottom: 12px; }
+
+#prompt {
+    width: 74%;
+    max-width: 560px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.03);
+    color: white;
+}
+
+.generate-btn {
+    padding: 12px 18px;
+    margin-left: 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    color: white;
+}
+
+/* Player */
+.player-area {
+    margin-top: 22px;
+    display: flex;
+    justify-content: center;
+}
+
+audio#player {
+    width: 100%;
+    max-width: 640px;
+    border-radius: 12px;
+    display: none;
+}
+
+.loading {
+    margin-top: 16px;
+    color: #93c5fd;
+    display: none;
+}
+
+</style>
+
+<!-- Dynamic background -->
+<div id="dynamic-bg" style="background: radial-gradient(circle at center, #040817, #000);"></div>
+
+<!-- Starfield layer -->
+<div id="star-layer"></div>
+
+<div class="explore-wrap">
+    <div class="card">
+        <h1>🎶 Explore</h1>
+        <p class="lead">Share your vision. We’ll create the experience.</p>
+
+        <div style="display:flex;justify-content:center;align-items:center;">
+            <input id="prompt" placeholder="e.g. summer beach" />
+            <button id="genBtn" class="generate-btn">Generate</button>
+        </div>
+
+        <div class="player-area">
+            <audio id="player" controls></audio>
+        </div>
+
+        <div id="loading" class="loading">🎧 Generating your soundscape...</div>
+    </div>
+</div>
+
+<script>
+/* ----------------------------
+   STARFIELD GENERATION
+---------------------------- */
+(function makeStars() {
+    const layer = document.getElementById("star-layer");
+    const count = 72;
+
+    for (let i = 0; i < count; i++) {
+        const s = document.createElement("div");
+        s.className = "psy-star";
+
+        s.style.left = Math.random() * 100 + "%";
+        s.style.top = Math.random() * 100 + "%";
+
+        const size = Math.random() * 2 + 0.6;
+        s.style.width = s.style.height = size + "px";
+
+        s.style.animationDuration = 7 + Math.random() * 8 + "s";
+        s.style.animationDelay = -Math.random() * 10 + "s";
+
+        layer.appendChild(s);
+    }
+})();
+
+/* ----------------------------
+   BACKEND HOOK + BACKGROUND
+---------------------------- */
+const POST_URL = "{% url 'music:ai_generate_api' %}";
+
+const genBtn = document.getElementById("genBtn");
+const promptEl = document.getElementById("prompt");
+const loadingEl = document.getElementById("loading");
+const player = document.getElementById("player");
+const dynBg = document.getElementById("dynamic-bg");
+
+genBtn.addEventListener("click", async () => {
+    const prompt = promptEl.value.trim();
+    if (!prompt) {
+        alert("Please enter a mood or theme.");
+        return;
+    }
+
+    player.style.display = "none";
+    player.pause();
+    player.removeAttribute("src");
+    loadingEl.style.display = "block";
+
+    try {
+        const form = new FormData();
+        form.append("prompt", prompt);
+
+        const resp = await fetch(POST_URL, { method: "POST", body: form });
+        const data = await resp.json();
+
+        loadingEl.style.display = "none";
+
+        if (resp.ok && data.success) {
+            player.src = data.file;
+            player.style.display = "block";
+            player.play().catch(() => {});
+
+            if (data.background) {
+  // Add class so CSS transition shows
+  document.body.classList.add('explore-bg-active');
+
+  // Set the background image on the dynamic div (and ensure CSS properties)
+  dynBg.style.backgroundImage = `url('${data.background}')`;
+  dynBg.style.backgroundSize = 'cover';
+  dynBg.style.backgroundPosition = 'center center';
+  dynBg.style.backgroundRepeat = 'no-repeat';
+  // mobile-friendly fallback (avoid fixed)
+  if (window.innerWidth <= 900) dynBg.style.backgroundAttachment = 'scroll';
+  else dynBg.style.backgroundAttachment = 'fixed';
+}
+        } else {
+            alert("Generation failed: " + (data.error || "server error"));
+        }
+    } catch (err) {
+        loadingEl.style.display = "none";
+        console.error(err);
+        alert("Network/server error.");
+    }
+});
+</script>
+
+{% endblock %}

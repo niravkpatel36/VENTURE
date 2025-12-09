@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ album.name }} — Album Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    }
+    img {
+      border-radius: 12px;
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    h1 { color: #1db954; }
+    .track {
+      margin: 10px 0;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+    a { color: #1db954; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>{{ album.name }}</h1>
+  <img src="{{ album.images.0.url }}" alt="Album cover">
+  <p><strong>Artist:</strong> {{ album.artists.0.name }}</p>
+  <p><a href="{{ album.external_urls.spotify }}" target="_blank">Open in Spotify</a></p>
+
+  <h2>Tracks</h2>
+  {% for t in album.tracks.items %}
+    <div class="track">
+      <strong>{{ t.name }}</strong>
+      {% if t.preview_url %}
+        <audio controls>
+          <source src="{{ t.preview_url }}" type="audio/mpeg">
+        </audio>
+      {% else %}
+        <p><small>No preview available</small></p>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+{% if query %}
+  <a href="/" class="home-button">← Back to Home</a>
+{% else %}
+  <a href="/" class="home-button">← Back to Home</a>
+{% endif %}
+
+</body>
+</html>

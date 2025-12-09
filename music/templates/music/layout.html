@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Venture</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Global Styles -->
+  <style>
+    /* === RESET & BASE === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: white;
+      background: radial-gradient(circle at top left, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+    }
+
+    header {
+      width: 100%;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      font-weight: 600;
+      font-size: 1.5rem;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #00c6ff;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 980px;
+      padding: 2rem;
+      text-align: center;
+      z-index: 2;
+    }
+
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* === Floating animated background === */
+    canvas#bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* === Mobile responsiveness === */
+    @media (max-width: 768px) {
+      nav a {
+        margin-left: 0.8rem;
+        font-size: 0.95rem;
+      }
+      main {
+        padding: 1.25rem;
+      }
+      .brand {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- GLOBAL HOME BUTTON -->
+<a href="{% url 'music:home_page' %}" id="globalHomeBtn">Home</a>
+
+<style>
+#globalHomeBtn {
+    position: fixed;
+    top: 20px;
+    right: 20px; /* keep equal spacing */
+    z-index: 99999;
+
+    padding: 10px 20px; /* symmetrical horizontal ratio */
+    background: rgba(0,0,0,0.55);
+
+    border-radius: 12px; /* works better with the padding */
+    border: 1px solid rgba(255,255,255,0.15);
+
+    color: white;
+    text-decoration: none;
+
+    font-size: 1rem;
+    line-height: 1; /* prevents default browser line-height asymmetry */
+
+    backdrop-filter: blur(6px);
+    transition: 0.22s ease;
+}
+
+#globalHomeBtn:hover {
+    background: rgba(255,255,255,0.20);
+    transform: scale(1.07);
+}
+</style>
+
+  <!-- Floating background -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">🎵 VENTURE</div>
+  </header>
+
+  <!-- Main content -->
+  <main>
+    {% block body %}
+    {% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 VENTURE by Nirav.</p>
+  </footer>
+
+  <!-- Animated floating lights (canvas) -->
+  <script>
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const lights = Array.from({ length: 60 }).map(() => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      dx: (Math.random() - 0.5) * 0.6,
+      dy: (Math.random() - 0.5) * 0.6,
+      color: `hsla(${Math.random() * 360}, 70%, 60%, 0.6)`
+    }));
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      lights.forEach(l => {
+        ctx.beginPath();
+        ctx.arc(l.x, l.y, l.r, 0, Math.PI * 2);
+        ctx.fillStyle = l.color;
+        ctx.fill();
+        l.x += l.dx;
+        l.y += l.dy;
+        if (l.x < 0 || l.x > canvas.width) l.dx *= -1;
+        if (l.y < 0 || l.y > canvas.height) l.dy *= -1;
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>

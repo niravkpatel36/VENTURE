@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Venture</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="{% static 'music/css/style.css' %}"> <!-- reuse styles -->
+  <style>
+    .panel { max-width: 980px; margin: 2rem auto; padding: 1.25rem; background: rgba(255,255,255,0.03); border-radius: 12px; }
+    label { display:block; margin: .5rem 0 0.2rem; color: #ddd; }
+    input, select { width: 100%; padding: 0.6rem; border-radius: 8px; border: none; margin-bottom: 0.6rem; }
+    .controls { display:flex; gap: 12px; flex-wrap:wrap; }
+    .btn { background: #ff8c00; color: white; padding: .6rem 1rem; border-radius:8px; border:none; cursor:pointer; }
+    canvas#vis { width:100%; height: 360px; display:block; border-radius: 8px; background: transparent; }
+    .small { font-size: 0.85rem; color: #aaa; margin-top: .4rem; }
+  </style>
+</head>
+<body>
+  <header class="header"><h1>सरगम — Mood Studio</h1></header>
+
+  <main class="panel">
+    <div>
+      <label for="mood">Describe a mood or theme (e.g., calm sunrise, anxious, epic)</label>
+      <input id="mood" placeholder="Type a mood: e.g., chill, cinematic, happy, night drive" value="chill ambient">
+    </div>
+
+    <div class="controls">
+      <div style="flex:1">
+        <label for="tempo">Tempo (BPM)</label>
+        <input id="tempo" type="range" min="60" max="160" value="90">
+      </div>
+      <div style="width:160px">
+        <label for="length">Length (bars)</label>
+        <select id="length"><option>8</option><option>16</option><option selected>32</option></select>
+      </div>
+      <div style="width:180px">
+        <label for="instrument">Instrument</label>
+        <select id="instrument">
+          <option value="pad">Warm Pad</option>
+          <option value="pluck">Digital Pluck</option>
+          <option value="synth">Bright Synth</option>
+          <option value="bass">Deep Bass</option>
+        </select>
+      </div>
+
+      <button id="generate" class="btn">Generate & Play</button>
+      <button id="stop" class="btn" style="background:#666">Stop</button>
+    </div>
+
+    <p class="small">Generated audio is synthesized locally in your browser — no data leaves your machine for the MVP.</p>
+
+    <canvas id="vis"></canvas>
+
+    <div style="margin-top:1rem;">
+      <button id="download" class="btn" style="background:#0b84ff">Download WAV</button>
+      <span id="status" class="small"></span>
+    </div>
+  </main>
+
+  <!-- Tone.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.39/build/Tone.min.js"></script>
+  <!-- musicgen script -->
+  <script src="{% static 'music/js/musicgen.js' %}"></script>
+  <script src="{% static 'music/js/visuals.js' %}"></script>
+  <script>
+    // initialize with default behavior
+    MusicGen.init({
+      moodInput: document.getElementById('mood'),
+      tempoInput: document.getElementById('tempo'),
+      lengthSelect: document.getElementById('length'),
+      instrumentSelect: document.getElementById('instrument'),
+      generateBtn: document.getElementById('generate'),
+      stopBtn: document.getElementById('stop'),
+      downloadBtn: document.getElementById('download'),
+      statusEl: document.getElementById('status'),
+      canvas: document.getElementById('vis')
+    });
+  </script>
+</body>
+</html>

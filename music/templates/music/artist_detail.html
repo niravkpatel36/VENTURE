@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ artist.name }} — Artist Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    }
+    img {
+      border-radius: 50%;
+      width: 220px;
+      height: 220px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    h1 { color: #1db954; }
+    .track {
+      margin: 10px 0;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+    a { color: #1db954; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>{{ artist.name }}</h1>
+  {% if artist.images %}
+    <img src="{{ artist.images.0.url }}" alt="{{ artist.name }}">
+  {% endif %}
+  <p><a href="{{ artist.external_urls.spotify }}" target="_blank">Open in Spotify</a></p>
+
+  <h2>Top Tracks</h2>
+  {% for t in top_tracks %}
+    <div class="track">
+      <strong>{{ t.name }}</strong>
+      <p>{{ t.album.name }}</p>
+      {% if t.preview_url %}
+        <audio controls>
+          <source src="{{ t.preview_url }}" type="audio/mpeg">
+        </audio>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+{% if query %}
+  <a href="/" class="home-button">← Back to Home</a>
+{% else %}
+  <a href="/" class="home-button">← Back to Home</a>
+{% endif %}
+
+</body>
+</html>

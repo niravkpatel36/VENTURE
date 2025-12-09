@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Venture</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: radial-gradient(circle at top, #05091a, #0a1f3a, #142850);
+      color: white;
+      text-align: center;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(90deg, #00f5ff, #00b3ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    input {
+      padding: 10px 14px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      margin-top: 10px;
+      width: 220px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #00b3ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.08);
+      background: #00f5ff;
+    }
+
+    audio {
+      margin-top: 20px;
+      width: 320px;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    a.back {
+      margin-top: 30px;
+      display: inline-block;
+      color: #00b3ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <h1>Venture</h1>
+  <p>Describe a mood or theme, and let AI craft the soundscape 🎧</p>
+
+  <input type="text" id="mood" placeholder="e.g. calm, happy, mystery" />
+  <button onclick="generateMusic()">Generate Music</button>
+
+  <audio id="player" controls></audio>
+
+  <a href="/" class="back">← Back to Home</a>
+
+  <script>
+  // Starfield base
+  const canvas = document.getElementById("bg");
+  const ctx = canvas.getContext("2d");
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  const stars = Array.from({ length: 120 }).map(() => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.8,
+    dx: (Math.random() - 0.5) * 0.4,
+    dy: (Math.random() - 0.5) * 0.4,
+  }));
+
+  function drawVisualizer(freqData) {
+    ctx.fillStyle = "rgba(10, 15, 35, 0.3)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // moving stars
+    stars.forEach((s, i) => {
+      ctx.beginPath();
+      const pulse = (freqData[i % freqData.length] / 255) * 1.5;
+      ctx.arc(s.x, s.y, s.r + pulse, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0, ${200 + pulse * 55}, 255, 0.8)`;
+      ctx.fill();
+      s.x += s.dx;
+      s.y += s.dy;
+      if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+      if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
+    });
+  }
+
+  async function generateMusic() {
+    const mood = document.getElementById("mood").value;
+    const response = await fetch(`/ai/generate/?mood=${encodeURIComponent(mood)}`);
+    const data = await response.json();
+    const player = document.getElementById("player");
+    player.src = data.track_url;
+    player.play();
+    setupVisualizer(player);
+  }
+
+  function setupVisualizer(audio) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioCtx.createAnalyser();
+    const source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      analyser.getByteFrequencyData(dataArray);
+      drawVisualizer(dataArray);
+    }
+    animate();
+  }
+
+  window.addEventListener("resize", () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+  });
+  </script>
+</body>
+</html>
+
