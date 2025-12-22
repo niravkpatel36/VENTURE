@@ -6,8 +6,6 @@ The platform integrates external APIs, deterministic prompt interpretation, and 
 
 Try the Demo [here](https://venture-qgzz.onrender.com/).
 
----
-
 ## What Does VENTURE Do?
 
 VENTURE provides three primary user-facing experiences:
@@ -38,8 +36,6 @@ A fully designed album experience featuring:
 - Responsive layout optimized for desktop and mobile  
 - Smooth transitions with minimal layout reflow  
 
----
-
 ## System Architecture
 
 VENTURE follows a classic full-stack web architecture with clear separation of concerns and asynchronous extensibility.
@@ -54,8 +50,6 @@ VENTURE follows a classic full-stack web architecture with clear separation of c
 - Lightweight JavaScript modules for interactivity and media control  
 - Deterministic prompt interpretation over opaque ML dependencies  
 - Asynchronous task infrastructure in place for future AI workloads  
-
----
 
 ## Core Components
 
@@ -77,8 +71,6 @@ VENTURE follows a classic full-stack web architecture with clear separation of c
 | `explore.js` | Prompt handling, background transitions, UI state |
 | Django templates | Structured layout and server-rendered UI |
 
----
-
 ## Data and Control Flow
 
 ### Search Flow
@@ -97,13 +89,9 @@ VENTURE follows a classic full-stack web architecture with clear separation of c
 
 This design prioritizes a clean and understandable workflow, making it easy to debug and expand upon.
 
----
-
 ## Repository Structure
 
 <img width="600" height="600" alt="Repo Structure" src="https://github.com/user-attachments/assets/beddf554-c015-4b8d-8e11-635971f7149b" />
-
----
 
 ## Future Improvements
 
@@ -114,8 +102,6 @@ There are several high-value enhancements that could improve the project. These 
 2. **Smarter Mood/Theme Inference:** Introduce a lightweight, explainable ML classifier for mood inference while still falling back to deterministic matching for reliability. This preserves robustness while allowing more expressive prompts. 
 
 3. **Waveform Visualization:** Add a live, canvas-based waveform or spectrum visualization on the album player to potentially increase the multimedia feel of the interface.
-
----
 
 ## License
 
