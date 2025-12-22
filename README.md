@@ -4,7 +4,7 @@ A full-stack music exploration platform that combines third-party music discover
 
 The platform integrates external APIs, deterministic prompt interpretation, and custom audio playback into a unified experience, with an architecture designed to support scalability, accessibility, and AI-driven integrations without restructuring core components.
 
-Experience the platform live [here](https://venture-qgzz.onrender.com/). Please allow a minute for it to initialize.
+Try the Demo [here](https://venture-qgzz.onrender.com/).
 
 ---
 
