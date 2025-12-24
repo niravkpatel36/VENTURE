@@ -162,13 +162,6 @@ This design prioritizes a clean and understandable workflow, making it easy to d
 
 ```
 VENTURE/
-├── manage.py                  # Django entrypoint
-├── requirements.txt           # Python dependencies
-├── render.yaml                # Deployment configuration
-├── build.sh                   # Build script
-├── README.md
-├── LICENSE
-│
 ├── venture_site/              # Django project configuration
 │   ├── settings.py            # Global settings and static config
 │   ├── urls.py                # Root URL routing
@@ -192,6 +185,13 @@ VENTURE/
 │   ├── urls.py
 │   ├── templates/ai_music/
 │   └── migrations/
+│
+├── manage.py                  # Django entrypoint
+├── requirements.txt           # Python dependencies
+├── render.yaml                # Deployment configuration
+├── build.sh                   # Build script
+├── README.md
+├── LICENSE
 ```
 
 ## Local Development
