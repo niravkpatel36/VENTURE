@@ -12,9 +12,9 @@ Try the Demo [here](https://venture-qgzz.onrender.com/).
 - [Core Components](#core-components)
 - [Data and Control Flow](#data-and-control-flow)
 - [Repository Structure](#repository-structure)
-- [Future Improvements](#future-improvements)
 - [Local Development](#local-development)
 - [Configuration](#configuration)
+- [Future Improvements](#future-improvements)
 - [License](#license)
 
 ## What Does VENTURE Do?
