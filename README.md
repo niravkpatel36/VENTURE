@@ -55,8 +55,6 @@ A fully designed album experience featuring:
 
 <img width="1120" height="599" alt="v4" src="https://github.com/user-attachments/assets/477e77fe-5d18-4a3f-a7d4-45684c4183ad" />
 
-<img width="1120" height="599" alt="v5" src="https://github.com/user-attachments/assets/4b3431eb-1f68-4e7f-8854-5fb47746a1bb" />
-
 ## System Architecture
 
 VENTURE follows a classic full-stack web architecture with clear separation of concerns and asynchronous extensibility.
