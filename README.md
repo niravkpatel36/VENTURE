@@ -6,7 +6,20 @@ The platform integrates external APIs, deterministic prompt interpretation, and 
 
 Try the Demo [here](https://venture-qgzz.onrender.com/).
 
+## Table of Contents
+- [What Does VENTURE Do?](#what-does-venture-do)
+- [System Architecture](#system-architecture)
+- [Core Components](#core-components)
+- [Data and Control Flow](#data-and-control-flow)
+- [Repository Structure](#repository-structure)
+- [Future Improvements](#future-improvements)
+- [Local Development](#local-development)
+- [Configuration](#configuration)
+- [License](#license)
+
 ## What Does VENTURE Do?
+
+<img width="1120" height="599" alt="v1" src="https://github.com/user-attachments/assets/b36fdae7-86a5-4db1-b3c0-e73646ebcb19" />
 
 VENTURE provides three primary user-facing experiences:
 
@@ -16,7 +29,9 @@ A responsive search interface backed by the Spotify Web API that supports:
 - Track, album, and artist search  
 - Server-side authentication and token handling  
 - Clean API normalization and validation  
-- Debounced client-side input for low-latency UX  
+- Debounced client-side input for low-latency UX
+
+<img width="1120" height="599" alt="v2" src="https://github.com/user-attachments/assets/aa7e6094-f2a8-4d51-91d4-1aaf9fddf3a2" />
 
 ### 2. Mood and Theme Explorer
 A prompt-driven exploration studio that:
@@ -28,13 +43,19 @@ A prompt-driven exploration studio that:
 
 This feature functions as an AI-adjacent system today and as an AI integration surface tomorrow.
 
+<img width="1120" height="599" alt="v3" src="https://github.com/user-attachments/assets/c4f7a400-3bcb-484e-bab8-1222a4153308" />
+
 ### 3. My Album: 14-Track Interactive Player
 A fully designed album experience featuring:
 
 - Fourteen curated audio tracks  
 - Keyboard-accessible playback controls  
 - Responsive layout optimized for desktop and mobile  
-- Smooth transitions with minimal layout reflow  
+- Smooth transitions with minimal layout reflow
+
+<img width="1120" height="599" alt="v4" src="https://github.com/user-attachments/assets/477e77fe-5d18-4a3f-a7d4-45684c4183ad" />
+
+<img width="1120" height="599" alt="v5" src="https://github.com/user-attachments/assets/4b3431eb-1f68-4e7f-8854-5fb47746a1bb" />
 
 ## System Architecture
 
@@ -42,7 +63,55 @@ VENTURE follows a classic full-stack web architecture with clear separation of c
 
 ### High-Level Architecture
 
-<img width="600" height="600" alt="architecture" src="https://github.com/user-attachments/assets/781fa329-0aea-46ff-9290-267d8d0675ee" />
+```
+┌──────────────────────────────┐
+│       Client Interface       │
+│     Django Templates + JS    │
+│                              │
+│  - Search UI                 │
+│  - Explore Studio            │
+│  - Album Player              │
+│  - Keyboard Controls         │
+└───────────────┬──────────────┘
+                │ HTTP Requests
+                ▼
+┌──────────────────────────────┐
+│       Application Layer      │
+│            Django            │
+│                              │
+│  - URL Routing               │
+│  - View Orchestration        │
+│  - Input Validation          │
+│  - Template Rendering        │
+└───────────────┬──────────────┘
+                │
+                ▼
+┌────────────────────────────────────────┐
+│      Integration and Logic Layer       │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │ Spotify API Client               │  │
+│  │ - Auth and token handling        │  │
+│  │ - Search normalization           │  |
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │ Theme Mapping Engine             │  │
+│  │ - Keyword and synonym matching   │  │
+│  │ - Mood and genre selection       │  │
+│  └──────────────────────────────────┘  │
+└───────────────┬────────────────────────┘
+                │
+                ▼
+┌──────────────────────────────┐
+│     Static Asset Pipeline    │
+│                              │
+│  - Album audio tracks        │
+│  - Mood sample clips         │
+│  - Background images         │
+│  - Styles and visuals        │
+└──────────────────────────────┘
+```
 
 ### Design Principles
 
@@ -91,7 +160,67 @@ This design prioritizes a clean and understandable workflow, making it easy to d
 
 ## Repository Structure
 
-<img width="600" height="600" alt="Repo Structure" src="https://github.com/user-attachments/assets/beddf554-c015-4b8d-8e11-635971f7149b" />
+```
+VENTURE/
+├── manage.py                  # Django entrypoint
+├── requirements.txt           # Python dependencies
+├── render.yaml                # Deployment configuration
+├── build.sh                   # Build script
+├── README.md
+├── LICENSE
+│
+├── venture_site/              # Django project configuration
+│   ├── settings.py            # Global settings and static config
+│   ├── urls.py                # Root URL routing
+│   ├── asgi.py
+│   └── wsgi.py
+│
+├── music/                     # Core application logic
+│   ├── views.py               # Search, explore, album views
+│   ├── urls.py                # App-level routing
+│   ├── models.py              # Future expansion
+│   ├── templates/music/       # UI templates
+│   ├── static/music/          # JS, audio assets, visuals, styles
+│   │   ├── album/             # 14-track album audio + artwork
+│   │   ├── samples/           # Mood and theme audio samples
+│   │   ├── bg/                # Background images
+│   │   └── js/                # Client-side interaction logic
+│   └── migrations/            # Django migrations
+│
+├── ai_music/                  # Forward-compatible AI module
+│   ├── views.py
+│   ├── urls.py
+│   ├── templates/ai_music/
+│   └── migrations/
+```
+
+## Local Development
+
+### Prerequisites:
+- Python 3.10 or higher
+- pip
+- Virtual environment tooling
+
+### Setup
+```
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+The application runs at http://127.0.0.1:8000.
+
+## Configuration
+
+The system is configured entirely through environment variables.
+
+For Example,
+```
+SPOTIFY_CLIENT_ID=your_client_id
+SPOTIFY_CLIENT_SECRET=your_client_secret
+DJANGO_SECRET_KEY=your_secret_key
+DEBUG=False
+```
 
 ## Future Improvements
 
